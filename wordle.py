@@ -32,7 +32,7 @@ word_length = 5
 # debug_user_guess - Hard coded User guess word
 # debug_target_word - Hard coded target word
 debug_state = True
-debug_test_case = 2
+debug_test_case = 3
 debug_user_guess = "tests"
 debug_target_word = "tests"
 
@@ -44,16 +44,45 @@ debug_target_word = "tests"
 # TODO: Score Guess Function
 def score_guess(user_guess: str, target: str) -> list[int]:
     """Scores the state of the guess vs target word and returns a list of letter scores
+    Arguments:
+    ---------
     :param(str) user_guess: user guess string
     :param(str) target: target guess string
+
+    Returns:
+    -------
     :return(list[int]): list of letter scores: [0] letter not in word, [1] letter in word but wrong position, [2] letter in correct position"""
 
     # Initialise the output list with all 0's
     output = [0] * len(target)
+    remaining_letters = []
+
+    if user_guess == target:
+        output = [2] * len(target)
+        return output
 
     for letter in range(len(target)):
         if user_guess[letter] == target[letter]:
             output[letter] = 2
+        # else if letters don't match, add remaining letters to a remaining_letters_list
+        else:
+            remaining_letters.append(target[letter])
+
+    # Loop through target word again
+    for letter in range(len(target)):
+
+        # skip/continue over letters that are already in the right place ([2])
+        if output[letter] == 2:
+            continue
+
+        # check if user_input letter is in remaining_letter_list
+        if user_guess[letter] in remaining_letters:
+
+            # Change output[letter] to [1] (in word but wrong place)
+            output[letter] = 1
+
+            # Remove letter from remaining_letter_list
+            remaining_letters.remove(user_guess[letter])
 
     # Return
     return output
@@ -62,7 +91,12 @@ def score_guess(user_guess: str, target: str) -> list[int]:
 # TODO: Read File Into Word List Function
 def read_words_into_list(file_path: str) -> list[str] | None:
     """Opens a file and reads each line into a list
+    Arguments:
+    ---------
     :param(str) file_path: path to file with words
+
+    Returns:
+    -------
     :return(list[str]): cleaned list of words matching game word_length setting"""
 
     # Try open given filepath and read lines
@@ -105,6 +139,9 @@ def show_instructions():
 # Asks user to input a word and cleans for capital letters and white spaces
 def get_user_guess() -> str:
     """Gets the users input and cleans it
+
+    Returns:
+    -------
     :returns: The cleaned user input
     """
     if debug_state and debug_test_case != 0:
@@ -118,8 +155,13 @@ def user_word_matches_target(user_guess: str, target_word: str) -> bool:
 # Verifies if the users guess is valid, returns False if contains anything other than letters, is not in all_words.txt or incorrect length or True for everything else.
 def is_user_guess_valid(user_input: str, word_of_the_day: str) -> bool:
     """Validates the users input.
+    Arguments:
+    ---------
     :param user_input: The user input
     :param word_of_the_day: The word of the day
+
+    Returns:
+    -------
     :return boolean: True if user input valid, False otherwise"""
 
     # If the users input is not the same length as the word of the day
@@ -149,6 +191,8 @@ def debug_mode(state: bool,
                user_guess: str = None,
                target_word: str = None):
     """Debugs game functions
+    Arguments:
+    ---------
     :param(bool) state: True if debug mode is on, False otherwise
     :param(int) test_case: test case number (default: 0)
     :param(str) user_guess: user guess string (default: None)
@@ -189,6 +233,13 @@ def debug_mode(state: bool,
                 score = score_guess(user_guess, target_word)
                 print(f"\nUser Word: {user_guess}          | Target Word: {target_word}")
                 print(f"Score: {score}    | Expected: {[2] * len(target_word)}")
+            case 3:
+                # Assignment test case 3
+                user_guess = "world"
+                target_word = "hello"
+                score = score_guess(user_guess, target_word)
+                print(f"\nUser Word: {user_guess}          | Target Word: {target_word}")
+                print(f"Score: {score}    | Expected: {[0,1,0,2,0]}")
 
 
 #TODO: Main Program
