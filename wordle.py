@@ -32,7 +32,7 @@ word_length = 5
 # debug_user_guess - Hard coded User guess word
 # debug_target_word - Hard coded target word
 debug_state = True
-debug_test_case = 4
+debug_test_case = 6
 debug_user_guess = "tests"
 debug_target_word = "tests"
 debug_file_path = ""
@@ -156,6 +156,10 @@ def get_user_guess() -> str:
 
     return input("\nGuess a word: ").strip().lower()
 
+# Para okayed this at 2025-11-17 20:21
+def random_target_word() -> str:
+    return random.choice(read_words_into_list(target_words_path))
+
 def user_word_matches_target(user_guess: str, target_word: str) -> bool:
     return False
 
@@ -230,33 +234,37 @@ def debug_mode(state: bool,
                     debug_mode(True, test_case, user_guess, target_word)
 
             case 1:
-                # Assignment test case 1
+                # Assessment test case 1
                 user_guess = "world"
                 target_word = "train"
                 score = score_guess(user_guess, target_word)
                 print(f"\nUser Word: {user_guess}          | Target Word: {target_word}")
                 print(f"Score: {score}    | Expected: {[0] * len(target_word)}")
             case 2:
-                # Assignment test case 2
+                # Assessment test case 2
                 user_guess = "hello"
                 target_word = "hello"
                 score = score_guess(user_guess, target_word)
                 print(f"\nUser Word: {user_guess}          | Target Word: {target_word}")
                 print(f"Score: {score}    | Expected: {[2] * len(target_word)}")
             case 3:
-                # Assignment test case 3
+                # Assessment test case 3
                 user_guess = "world"
                 target_word = "hello"
                 score = score_guess(user_guess, target_word)
                 print(f"\nUser Word: {user_guess}          | Target Word: {target_word}")
                 print(f"Score: {score}    | Expected: {[0,1,0,2,0]}")
             case 4:
-                if file_path is None or not file_path:
-                    print("\nError: No file path provided")
-                    return
-
+                # Assessment debug test case 4
                 print("\nFirst 5 words from all_words.txt")
-                print(f"Found:    {read_words_into_list(file_path)[:5]}\nExpected: ['aahed', 'aalii', 'aargh', 'aarti', 'abaca']")
+                print(f"Found:    {read_words_into_list(all_words_path)[:5]}\nExpected: ['aahed', 'aalii', 'aargh', 'aarti', 'abaca']")
+            case 5:
+                # Assessment debug test case 5
+                print("\nLast 5 words from target_words.txt")
+                print(f"Found:    {read_words_into_list(target_words_path)[-5:]}\nExpected: ['young', 'youth', 'zebra', 'zesty', 'zonal']")
+            case 6:
+                for i in range(5):
+                    print(random_target_word())
 
 
 
