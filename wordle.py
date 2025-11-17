@@ -6,12 +6,11 @@
 # Course Cert IV: Programming
 # Lecturer: Para O'Kelly
 
-# TODO: Add Import statements (if needed)
 import random
+import sys
 
 # Name: Josh Plank | Student Number: 20154551 | Date: 17/11/25
 # Variables and Constants
-# TODO: Define Constants
 # -------------------------------
 # -------=| File Paths |=--------
 # -------------------------------
@@ -23,6 +22,17 @@ target_words_path = "target_words.txt"
 # -------------------------------
 # Hidden word length (allows for different difficulty games in a further expansion)
 word_length = 5
+game_attempts = 5
+
+# -------------------------------
+# -------=| Formatting |=--------
+# -------------------------------
+# Horizontal rules
+xxl_hr = "─" * 112 + "\n"
+sm_hr = "\n " + "─" * 60 + "\n"
+correct_symbol = "X"
+wrong_symbol = "-"
+wrongly_placed_symbol = "?"
 
 # -------------------------------
 # -------=| Debugging |=---------
@@ -31,19 +41,17 @@ word_length = 5
 # debug_test_case - Run test cases easily (default: 0 | Guess: Will ask you to input a word | Target: Will pick a random word from target_words.txt)
 # debug_user_guess - Hard coded User guess word
 # debug_target_word - Hard coded target word
-debug_state = True
+# debug_file_path - File path for word lists
+# debug_number_of_guesses - sets the debug amount of guesses; used for looping through the game 'x' amounts of times
+debug_state = False
 debug_test_case = 8
 debug_user_guess = ""
 debug_target_word = None
 debug_file_path = ""
 debug_number_of_guesses = 5
 
-
-# TODO: Define Variables
-
 # Name: Josh Plank | Student Number: 20154551 | Date: 17/11/25
 # Application Functions
-# TODO: Score Guess Function
 def score_guess(user_guess: str, target: str) -> list[int]:
     """
     Scores the state of the guess vs target word and returns a list of letter scores
@@ -132,18 +140,37 @@ def read_words_into_list(file_path: str) -> list[str] | None:
         print(f"Error: {error}")
         return None
 
+# ----------------------------------------
+# ------------=| Prints |=----------------
+# -----------------------------------------
+def print_welcome_message():
+    """Prints the welcome message to console"""
 
-# TODO: Display Greeting Function
-def show_greeting():
-    print("Welcome")
+    print(f"{xxl_hr}"
+          "|                                       Welcome to AT3 - Word-all 2.0!                                          |\n"
+          "|                                              Hope you enjoy!                                                  |\n"
+          "|                                             (Created by Josh)                                                 |\n"
+          f"{xxl_hr}")
 
+# Prints game instructions
+def print_instructions():
+    """Prints the game instructions to console"""
 
-# TODO: Display Instructions Function
-def show_instructions():
-    print("Instructions")
+    print(f"{xxl_hr}"
+          f"|                                                How to Play                                                    |\n"
+          f"{xxl_hr}"
+          "|    Each day we randomly select a word and you have to guess it!                                               |\n"
+          "|    The randomly selected word is blanked out however still displays the correct amount of letters.            |\n"
+          "|    You must type in a word that you think might be hidden.                                                    |\n"
+          f"{xxl_hr}"
+          f"|    If you guess the correct letter and it's in the correct position '{correct_symbol}' will be displayed under the letter.   |\n"
+          f"|    If you guess a letter that is in the hidden word however in the wrong spot an '{wrongly_placed_symbol}' under the letter.        |\n"
+          f"|    If you guess a letter that is not in the hidden word, a '{wrong_symbol}' will be displayed under the letter.            |\n"
+          f"|    You must guess the word in {game_attempts} attempts.                                                                     |\n"
+          f"{xxl_hr}"
+          "|                                          * Good luck and have fun! *                                          |\n"
+          f"{xxl_hr}")
 
-
-# TODO: Any Optional Additional Functions
 # Asks user to input a word and cleans for capital letters and white spaces
 def get_user_guess() -> str:
     """Gets the users input and cleans it
@@ -163,11 +190,11 @@ def display_score(score: list[int], user_guess: str):
 
     for letter in score:
         if letter == 0:
-            output_marks.append("-")
-        if letter == 1:
-            output_marks.append("?")
-        if letter == 2:
-            output_marks.append("X")
+            output_marks.append(wrong_symbol)
+        elif letter == 1:
+            output_marks.append(wrongly_placed_symbol)
+        elif letter == 2:
+            output_marks.append(correct_symbol)
 
     print(f"{" ".join(user_guess)}\n{" ".join(output_marks)}\n")
 
@@ -201,10 +228,119 @@ def is_user_guess_valid(user_input: str, word_of_the_day: str) -> bool:
     # Otherwise return True
     return True
 
+# Check if player has won, print congratulations if they have, give them misery if they lost
+def player_has_won(win_condition: bool, attempts: int, users_guessed_words: str,  target: str):
+    """Function called to check if a player has won
+    Arguments:
+    ---------
+    :param win_condition: True if player has won, False otherwise
+    :param attempts: Number of attempts to play
+    :param users_guessed_words: List of words the player has guessed already
+    :param target: The word of the day"""
 
-# TODO: Play Game Function
+    # Dynamically space the end pipe of guessed words line depending on how many words in the sentence
+    guessed_words_str = f"| Guessed words: {users_guessed_words}"
+    if len(guessed_words_str) < 60:
+        str_filler = " " * (61 - len(guessed_words_str))
+        guessed_words_str = f"| Guessed words: {users_guessed_words}{str_filler}|"
 
-#TODO: Testing Function
+    # If the player has won, print congratulations and close terminal.
+    if win_condition:
+        print(f"{sm_hr}"
+              f"|                     Congratulations!                       |"
+              f"{sm_hr}"
+              f"|                You guessed the hidden word!                |\n"
+              f"| Attempts: {attempts}/{game_attempts}                                              |\n"
+              f"{guessed_words_str}"
+              f"{sm_hr}")
+        sys.exit(0)
+
+    # If the player runs out of attempts, print misery message and shame them. Close terminal.
+    if attempts <= 0:
+        print(f"{sm_hr}"
+              f"|                   Boo! You lost! Shame!                    |"
+              f"{sm_hr}"
+              f"|                The hidden word was: {target}                  |\n"
+              f"| Attempts: {attempts}/{game_attempts}                                              |\n"
+              f"{guessed_words_str}"
+              f"{sm_hr}")
+        sys.exit(0)
+
+# Gets the players name and welcomes them
+def get_players_name():
+    """Function called to get the players name and welcomes them"""
+    user_name = input("Please enter your name: ")
+    print(f"Welcome, {user_name}")
+
+# Asks the user if they need instructions or not and starts teh game
+def prompt_instructions():
+    """Function called to check if a player has required instructions and starts the game"""
+
+    user_response = input("Do you need instructions on how to play? (y/n): ").lower().strip()
+
+    if user_response not in ("y", "n"):
+        print("Invalid input, please only enter 'y' or 'n'")
+        prompt_instructions()
+
+    if user_response == "y":
+        print_instructions()
+
+    if user_response == "n":
+        print("Very well then, good luck!")
+
+# Please note: parameter only here as integrated into debug test case 9 (Defaulted to 'None' so without that test case affecting it will act as normal)
+def play_game(target_word: str = None):
+
+    print_welcome_message()
+
+    # Get players name and say welcome to them
+    get_players_name()
+
+    # Ask player if they want instructions
+    prompt_instructions()
+
+    # Initialise game
+    attempts = game_attempts
+    users_guessed_words = []
+
+    # Check if target word is set (debug test case 9)
+    if not target_word:
+        # Get random target word
+        target_word = random_target_word()
+
+    # Loop through number of attempts until attempts run out
+    while attempts > 0:
+
+        # Print attempt number
+        print(f"\nGuess number: {attempts}/{game_attempts}")
+
+        # Get the users guess
+        user_guess = get_user_guess()
+
+        # Check if users guess is valid
+        if is_user_guess_valid(user_guess, target_word):
+
+            # Print the guess word with appropriate relating symbols
+            display_score(score_guess(user_guess, target_word), user_guess)
+
+            # Add the users guess to our guessed words list
+            users_guessed_words.append(user_guess.capitalize())
+
+            # Format the guessed words list into a string, each word separated by a comma
+            guessed_words_str = ", ".join(users_guessed_words)
+
+            if user_guess == target_word:
+                player_has_won(True, attempts, guessed_words_str, target_word)
+            else:
+                # Reduce the guess attempt by 1
+                attempts -= 1
+                player_has_won(False, attempts, guessed_words_str, target_word)
+                print(f"Your current guesses: {guessed_words_str}\n---------------------")
+
+        # If not a valid word, continue loop; user_guess word error handling is done in is_user_guess_valid()
+        else:
+            continue
+
 # Name: Josh Plank | Student Number: 20154551 | Date: 17/11/25
 def debug_mode(state: bool,
                test_case: int = 0,
@@ -276,6 +412,7 @@ def debug_mode(state: bool,
             case 5:
                 print("\nLast 5 words from target_words.txt")
                 print(f"Found:    {read_words_into_list(target_words_path)[-5:]}\nExpected: ['young', 'youth', 'zebra', 'zesty', 'zonal']")
+            # Prints 5 random words
             case 6:
                 for i in range(5):
                     print(random_target_word())
@@ -348,11 +485,20 @@ def debug_mode(state: bool,
                         # Feed anagrams through display_score()
                         display_score(score_guess(anagram, target_word), anagram)
                 else:
-                    print("\nNo anagrams")
+                    print("\nNo anagrams found.")
 
-#TODO: Main Program
+            # Cheat mode! Displays the hidden word at the top of the console
+            case 9:
+                target_word = random_target_word()
+                print(f"\n Target word: {target_word}\n")
+                play_game(target_word)
+
+
 def main():
-    debug_mode(debug_state, debug_test_case, debug_user_guess, debug_target_word, debug_file_path, debug_number_of_guesses)
+    if debug_state:
+        debug_mode(debug_state, debug_test_case, debug_user_guess, debug_target_word, debug_file_path, debug_number_of_guesses)
+    else:
+        play_game()
 
 
 if __name__ == "__main__":
