@@ -32,9 +32,10 @@ word_length = 5
 # debug_user_guess - Hard coded User guess word
 # debug_target_word - Hard coded target word
 debug_state = True
-debug_test_case = 3
+debug_test_case = 4
 debug_user_guess = "tests"
 debug_target_word = "tests"
+debug_file_path = ""
 
 
 # TODO: Define Variables
@@ -94,8 +95,7 @@ def score_guess(user_guess: str, target: str) -> list[int]:
     # Return
     return output
 
-
-# TODO: Read File Into Word List Function
+# Name: Josh Plank | Student Number: 20154551 | Date: 17/11/25
 def read_words_into_list(file_path: str) -> list[str] | None:
     """Opens a file and reads each line into a list
     Arguments:
@@ -193,17 +193,20 @@ def is_user_guess_valid(user_input: str, word_of_the_day: str) -> bool:
 # TODO: Play Game Function
 
 #TODO: Testing Function
+# Name: Josh Plank | Student Number: 20154551 | Date: 17/11/25
 def debug_mode(state: bool,
                test_case: int = 0,
                user_guess: str = None,
-               target_word: str = None):
+               target_word: str = None,
+               file_path: str = None):
     """Debugs game functions
     Arguments:
     ---------
     :param(bool) state: True if debug mode is on, False otherwise
     :param(int) test_case: test case number (default: 0)
     :param(str) user_guess: user guess string (default: None)
-    :param(str) target_word: target word string (default: None)"""
+    :param(str) target_word: target word string (default: None)
+    :param(str) file_path: path to file with words"""
 
     # If game debug_state setting is set to 'True'
     if state:
@@ -247,11 +250,19 @@ def debug_mode(state: bool,
                 score = score_guess(user_guess, target_word)
                 print(f"\nUser Word: {user_guess}          | Target Word: {target_word}")
                 print(f"Score: {score}    | Expected: {[0,1,0,2,0]}")
+            case 4:
+                if file_path is None or not file_path:
+                    print("\nError: No file path provided")
+                    return
+
+                print("\nFirst 5 words from all_words.txt")
+                print(f"Found:    {read_words_into_list(file_path)[:5]}\nExpected: ['aahed', 'aalii', 'aargh', 'aarti', 'abaca']")
+
 
 
 #TODO: Main Program
 def main():
-    debug_mode(debug_state, debug_test_case, debug_user_guess, debug_target_word)
+    debug_mode(debug_state, debug_test_case, debug_user_guess, debug_target_word, debug_file_path)
 
 
 if __name__ == "__main__":
