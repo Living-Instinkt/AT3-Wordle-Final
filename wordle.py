@@ -43,7 +43,8 @@ debug_target_word = "tests"
 # Application Functions
 # TODO: Score Guess Function
 def score_guess(user_guess: str, target: str) -> list[int]:
-    """Scores the state of the guess vs target word and returns a list of letter scores
+    """
+    Scores the state of the guess vs target word and returns a list of letter scores
     Arguments:
     ---------
     :param(str) user_guess: user guess string
@@ -51,7 +52,13 @@ def score_guess(user_guess: str, target: str) -> list[int]:
 
     Returns:
     -------
-    :return(list[int]): list of letter scores: [0] letter not in word, [1] letter in word but wrong position, [2] letter in correct position"""
+    :return(list[int]): list of letter scores: [0] letter not in word, [1] letter in word but wrong position, [2] letter in correct position
+
+    Examples:
+    --------
+    score_guess("tests", "tests") - Returns: [2,2,2,2,2]
+    score_guess("world", "hello") - Returns: [0,1,0,2,0]
+    """
 
     # Initialise the output list with all 0's
     output = [0] * len(target)
