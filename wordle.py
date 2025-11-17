@@ -270,7 +270,7 @@ def player_has_won(win_condition: bool, attempts: int, users_guessed_words: str,
 def get_players_name():
     """Function called to get the players name and welcomes them"""
     user_name = input("Please enter your name: ")
-    print(f"Welcome, {user_name}")
+    print(f"Welcome, {user_name}\n")
 
 # Asks the user if they need instructions or not and starts teh game
 def prompt_instructions():
