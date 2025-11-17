@@ -32,10 +32,11 @@ word_length = 5
 # debug_user_guess - Hard coded User guess word
 # debug_target_word - Hard coded target word
 debug_state = True
-debug_test_case = 6
-debug_user_guess = "tests"
-debug_target_word = "tests"
+debug_test_case = 8
+debug_user_guess = ""
+debug_target_word = None
 debug_file_path = ""
+debug_number_of_guesses = 5
 
 
 # TODO: Define Variables
@@ -151,17 +152,24 @@ def get_user_guess() -> str:
     -------
     :returns: The cleaned user input
     """
-    if debug_state and debug_test_case != 0:
-        return ""
-
-    return input("\nGuess a word: ").strip().lower()
+    return input("Guess a word: ").strip().lower()
 
 # Para okayed this at 2025-11-17 20:21
 def random_target_word() -> str:
     return random.choice(read_words_into_list(target_words_path))
 
-def user_word_matches_target(user_guess: str, target_word: str) -> bool:
-    return False
+def display_score(score: list[int], user_guess: str):
+    output_marks = []
+
+    for letter in score:
+        if letter == 0:
+            output_marks.append("-")
+        if letter == 1:
+            output_marks.append("?")
+        if letter == 2:
+            output_marks.append("X")
+
+    print(f"{" ".join(user_guess)}\n{" ".join(output_marks)}\n")
 
 # Verifies if the users guess is valid, returns False if contains anything other than letters, is not in all_words.txt or incorrect length or True for everything else.
 def is_user_guess_valid(user_input: str, word_of_the_day: str) -> bool:
@@ -202,7 +210,8 @@ def debug_mode(state: bool,
                test_case: int = 0,
                user_guess: str = None,
                target_word: str = None,
-               file_path: str = None):
+               file_path: str = None,
+               number_of_guesses: int = None):
     """Debugs game functions
     Arguments:
     ---------
@@ -216,14 +225,15 @@ def debug_mode(state: bool,
     if state:
 
         match test_case:
+            # Test case that allows static user_guess and target_word or dynamic; Single iteration
             case 0:
 
                 # Check if user guess is None or empty
-                if user_guess is None or not user_guess:
+                if not user_guess:
                     user_guess = get_user_guess()
 
                 # Check is user guess is None or empty
-                if target_word is None or not target_word:
+                if not target_word:
                     target_word = random.choice(read_words_into_list(all_words_path))
 
                 # Checks if the user guess doesn't contain numbers, same length as word of the day and is in all_words.txt
@@ -233,44 +243,116 @@ def debug_mode(state: bool,
                 else:
                     debug_mode(True, test_case, user_guess, target_word)
 
+            # Assessment test case 1
             case 1:
-                # Assessment test case 1
                 user_guess = "world"
-                target_word = "train"
+                target_word = "stack"
                 score = score_guess(user_guess, target_word)
                 print(f"\nUser Word: {user_guess}          | Target Word: {target_word}")
                 print(f"Score: {score}    | Expected: {[0] * len(target_word)}")
+
+            # Assessment test case 2
             case 2:
-                # Assessment test case 2
                 user_guess = "hello"
                 target_word = "hello"
                 score = score_guess(user_guess, target_word)
                 print(f"\nUser Word: {user_guess}          | Target Word: {target_word}")
                 print(f"Score: {score}    | Expected: {[2] * len(target_word)}")
+
+            # Assessment test case 3
             case 3:
-                # Assessment test case 3
                 user_guess = "world"
                 target_word = "hello"
                 score = score_guess(user_guess, target_word)
                 print(f"\nUser Word: {user_guess}          | Target Word: {target_word}")
                 print(f"Score: {score}    | Expected: {[0,1,0,2,0]}")
+
+            # Assessment debug test case 4
             case 4:
-                # Assessment debug test case 4
                 print("\nFirst 5 words from all_words.txt")
                 print(f"Found:    {read_words_into_list(all_words_path)[:5]}\nExpected: ['aahed', 'aalii', 'aargh', 'aarti', 'abaca']")
+
+            # Assessment debug test case 5
             case 5:
-                # Assessment debug test case 5
                 print("\nLast 5 words from target_words.txt")
                 print(f"Found:    {read_words_into_list(target_words_path)[-5:]}\nExpected: ['young', 'youth', 'zebra', 'zesty', 'zonal']")
             case 6:
                 for i in range(5):
                     print(random_target_word())
 
+            # Runs through game play {number_of_guesses} amount of times; No win conditions
+            case 7:
 
+                # Check if target_word is None or empty; Gets a target word if it is
+                if not target_word:
+                    target_word = random_target_word()
+
+                # If number of guesses not specified; Set number of guesses to 5
+                if not number_of_guesses:
+                    number_of_guesses = 5
+
+                # Print the target word to assist with debugging
+                print(target_word)
+
+                # Sets number of attempts user has to guess the word
+                attempts = number_of_guesses
+
+                # Loop through number of attempts until attempts run out
+                while attempts > 0:
+
+                    # Print attempt number
+                    print(f"\nGuess number: {attempts}/{number_of_guesses}")
+
+                    # Get the users guess
+                    user_guess = get_user_guess()
+
+                    # Check if users guess is valid
+                    if is_user_guess_valid(user_guess, target_word):
+
+                        # Print target word with letter spacing
+                        print(f"{" ".join(target_word)}")
+
+                        # Print the guess word with appropriate relating symbols
+                        display_score(score_guess(user_guess, target_word), user_guess)
+
+                        # Reduce the guess attempt by 1
+                        attempts -= 1
+
+                    # If not a valid word, continue loop; user_guess word error handling is done in is_user_guess_valid()
+                    else:
+                        continue
+
+            # Checks target_word for anagrams in all_words.txt; Runs all anagrams through display_score (Good for testing display_score functionality)
+            case 8:
+
+                # Check if target_word is None or empty; Gets a target word if it is
+                if not target_word:
+                    target_word = random_target_word()
+
+                # Get all words from all_words.txt
+                all_words = read_words_into_list(all_words_path)
+
+                # Sort target_word
+                sorted_target = sorted(target_word)
+
+                # Find anagrams (same letters in any order); Exclude target_word
+                anagrams = [word for word in all_words if sorted(word) == sorted_target and word != target_word]
+
+                # If there are anagrams, loop through them all and test each one with display_score()
+                if len(anagrams) > 0:
+                    for anagram in anagrams:
+
+                        # Print target word with letter spacing
+                        print(f"{" ".join(target_word)}")
+
+                        # Feed anagrams through display_score()
+                        display_score(score_guess(anagram, target_word), anagram)
+                else:
+                    print("\nNo anagrams")
 
 #TODO: Main Program
 def main():
-    debug_mode(debug_state, debug_test_case, debug_user_guess, debug_target_word, debug_file_path)
+    debug_mode(debug_state, debug_test_case, debug_user_guess, debug_target_word, debug_file_path, debug_number_of_guesses)
 
 
 if __name__ == "__main__":
