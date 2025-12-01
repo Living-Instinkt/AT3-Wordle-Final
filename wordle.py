@@ -22,7 +22,7 @@ target_words_path = "target_words.txt"
 # -------------------------------
 # Hidden word length (allows for different difficulty games in a further expansion)
 word_length = 5
-game_attempts = 5
+game_attempts = 6
 
 # -------------------------------
 # -------=| Formatting |=--------
@@ -49,6 +49,7 @@ debug_user_guess = ""
 debug_target_word = None
 debug_file_path = ""
 debug_number_of_guesses = 5
+
 
 # Name: Josh Plank | Student Number: 20154551 | Date: 17/11/25
 # Application Functions
@@ -172,14 +173,20 @@ def print_instructions():
           f"{xxl_hr}")
 
 # Asks user to input a word and cleans for capital letters and white spaces
-def get_user_guess() -> str:
+def get_user_guess(target_word: str, cheat_mode: bool = False) -> str:
     """Gets the users input and cleans it
 
     Returns:
     -------
     :returns: The cleaned user input
     """
-    return input("Guess a word: ").strip().lower()
+
+    if cheat_mode:
+        input_str = f"({target_word}) Guess a word: "
+    else:
+        input_str = "Guess a word: "
+
+    return input(input_str).strip().lower()
 
 # Para okayed this at 2025-11-17 20:21
 def random_target_word() -> str:
@@ -270,6 +277,10 @@ def player_has_won(win_condition: bool, attempts: int, users_guessed_words: str,
 def get_players_name():
     """Function called to get the players name and welcomes them"""
     user_name = input("Please enter your name: ")
+
+    if user_name.strip() == "":
+        user_name = "Playa"
+
     print(f"Welcome, {user_name}\n")
 
 # Asks the user if they need instructions or not and starts teh game
@@ -302,6 +313,7 @@ def play_game(target_word: str = None):
     # Initialise game
     attempts = game_attempts
     users_guessed_words = []
+    user_cheat_mode = False
 
     # Check if target word is set (debug test case 9)
     if not target_word:
@@ -315,7 +327,20 @@ def play_game(target_word: str = None):
         print(f"\nGuess number: {attempts}/{game_attempts}")
 
         # Get the users guess
-        user_guess = get_user_guess()
+        user_guess = get_user_guess(target_word, user_cheat_mode)
+
+        if user_guess == "help":
+            print_instructions()
+            continue
+
+        if user_guess == "cheatmode":
+            if user_cheat_mode:
+                print("\nCheat mode deactivated!\n")
+                user_cheat_mode = False
+            else:
+                print("\nCheat mode activated!\n")
+                user_cheat_mode = True
+            continue
 
         # Check if users guess is valid
         if is_user_guess_valid(user_guess, target_word):

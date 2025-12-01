@@ -1,0 +1,9 @@
+
+1. Type help while guessing prints the instructions
+2. Default player name to player if they enter a blank string
+3. Cheat mode - Enter and exit cheat mode by typing 'cheatmode'
+4. Store statistics to file
+    - Number of games played,
+    - Average number of guessed to finish
+    - Semi-colon seperated list of names who have ever played (Unique)
+
