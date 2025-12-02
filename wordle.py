@@ -110,6 +110,7 @@ def score_guess(user_guess: str, target: str) -> list[int]:
     # Return
     return output
 
+
 # Name: Josh Plank | Student Number: 20154551 | Date: 17/11/25
 def read_words_into_list(file_path: str) -> list[str] | None:
     """Opens a file and reads each line into a list
@@ -146,6 +147,7 @@ def read_words_into_list(file_path: str) -> list[str] | None:
         print(f"Error: {error}")
         return None
 
+
 # ----------------------------------------
 # ------------=| Prints |=----------------
 # -----------------------------------------
@@ -157,6 +159,7 @@ def print_welcome_message():
           "|                                              Hope you enjoy!                                                  |\n"
           "|                                             (Created by Josh)                                                 |\n"
           f"{xxl_hr}")
+
 
 # Prints game instructions
 def print_instructions():
@@ -178,6 +181,7 @@ def print_instructions():
           "|                          (Type 'help' at any time to view these instructions again)                           |\n"
           f"{xxl_hr}")
 
+
 # Asks user to input a word and cleans for capital letters and white spaces
 def get_user_guess(target_word: str, cheat_mode: bool = False) -> str:
     """Gets the users input and cleans it
@@ -194,9 +198,11 @@ def get_user_guess(target_word: str, cheat_mode: bool = False) -> str:
 
     return input(input_str).strip().lower()
 
+
 # Para okayed this at 2025-11-17 20:21
 def random_target_word() -> str:
     return random.choice(read_words_into_list(target_words_path))
+
 
 def display_score(score: list[int], user_guess: str):
     output_marks = []
@@ -210,6 +216,7 @@ def display_score(score: list[int], user_guess: str):
             output_marks.append(correct_symbol)
 
     print(f"{" ".join(user_guess)}\n{" ".join(output_marks)}\n")
+
 
 # Verifies if the users guess is valid, returns False if contains anything other than letters, is not in all_words.txt or incorrect length or True for everything else.
 def is_user_guess_valid(user_input: str, word_of_the_day: str) -> bool:
@@ -240,6 +247,7 @@ def is_user_guess_valid(user_input: str, word_of_the_day: str) -> bool:
 
     # Otherwise return True
     return True
+
 
 # Check if player has won, print congratulations if they have, give them misery if they lost
 def player_has_won(win_condition: bool, attempts: int, users_guessed_words: list[str],  target: str, player_name: str):
@@ -284,6 +292,7 @@ def player_has_won(win_condition: bool, attempts: int, users_guessed_words: list
         update_stat_file()
         sys.exit(0)
 
+
 # Gets the players name and welcomes them
 def get_players_name() -> str:
     """Function called to get the players name and welcomes them"""
@@ -294,6 +303,7 @@ def get_players_name() -> str:
 
     print(f"Welcome, {user_name}\n")
     return user_name
+
 
 # Asks the user if they need instructions or not and starts teh game
 def prompt_instructions():
@@ -310,6 +320,7 @@ def prompt_instructions():
 
     if user_response == "n":
         print("\nVery well then, good luck!\n(Psst! You can type 'help' at any time to see the instructions.)")
+
 
 # Please note: parameter only here as integrated into debug test case 9 (Defaulted to 'None' so without that test case affecting it will act as normal)
 def play_game(target_word: str = None):
@@ -377,6 +388,7 @@ def play_game(target_word: str = None):
         # If not a valid word, continue loop; user_guess word error handling is done in is_user_guess_valid()
         else:
             continue
+
 
 # Name: Josh Plank | Student Number: 20154551 | Date: 17/11/25
 def debug_mode(state: bool,
@@ -546,6 +558,7 @@ def debug_mode(state: bool,
             case 12:
                 player_has_won(True, 1, ["steam"], "steam", "Playa")
 
+
 def get_average_score(user_guess_attempts: list[int]) -> float | None:
     """Takes in a list[int] of the total number of game attempts and
     returns the mean/average attempts or None if there is no data.
@@ -678,6 +691,9 @@ def save_game_log(player_name: str, target_word: str, player_guesses:list[str], 
 
     except Exception as e:
         print(e)
+
+def stats_handler():
+    pass
 
 def main():
     if debug_state:
