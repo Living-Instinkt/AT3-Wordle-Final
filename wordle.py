@@ -547,20 +547,77 @@ def debug_mode(state: bool,
                 player_has_won(True, 1, ["steam"], "steam", "Playa")
 
 def get_average_score(user_guess_attempts: list[int]) -> float | None:
-    """Return the mean/average attempts or None if there is no data."""
+    """Takes in a list[int] of the total number of game attempts and
+    returns the mean/average attempts or None if there is no data.
+
+    Param:
+         - user_guess_attempts (list[int]): List of past game attempts
+
+    Return:
+        - average attempts or None (float)
+    """
     if user_guess_attempts:
         return statistics.mean(user_guess_attempts)
+
     return None
+
+
+# https://www.geeksforgeeks.org/python/how-to-read-dictionary-from-file-in-python/
+def read_game_history() -> dict | None:
+    """Reads game history from 'game_history.txt' path and returns it as a dict.
+
+    Return:
+        dict | None: dictionary containing.
+        - 'player_name' (str): name of the player
+        - 'number_of_guesses' (int): number of guesses
+        - 'number_of_games' (int): number of games
+    """
+
+    # Initialise variables
+    player_names = []
+    number_of_guesses = []
+    number_of_games = 0
+
+    # Try open 'game_history.txt' as read only
+    try:
+        with open(game_history_path, "r") as file:
+            for line in file:
+
+                # If the line starts with a '{', use eval to attempt to put data into a dictionary.
+                if line.startswith("{"):
+                    stat_dict = ast.literal_eval(line)
+
+                    # Populate player_names and number_of_guesses lists
+                    player_names.append(stat_dict["player_name"])
+                    number_of_guesses.append(len(stat_dict["player_guesses"]))
+
+                    # Increment number of games by 1
+                    number_of_games += 1
+
+            return {"player_names": player_names, "number_of_guesses": number_of_guesses, "number_of_games": number_of_games}
+
+    except FileNotFoundError:
+        print(f"Error: '{game_history_path}' not found")
+        return None
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
 
 def update_stat_file():
     """
-    Update the stats file with the current guesses attempts.
+    Update the stats file cherry-picking data from game_history.txt using read_game_history().
     """
 
+    # Get the cherry-picked data from read_game_history()
     stats = read_game_history()
 
+    # If 'stats' is populated, try writing stats to file.
     if stats:
         try:
+
+            # Control for if we somehow end up with an empty 'avg_attempts'
             user_number_of_guesses = stats.get("number_of_guesses") or []
             avg_attempts = get_average_score(user_number_of_guesses)
 
@@ -569,6 +626,7 @@ def update_stat_file():
             else:
                 avg_attempts_str = "N/A"
 
+            # Write stats to file
             with open(stats_path, "w+") as file:
                 heading = "------------=| Game Stats |=------------\n"
                 file.write(
@@ -583,37 +641,22 @@ def update_stat_file():
     else:
         print("No stats found.")
 
-# https://www.geeksforgeeks.org/python/how-to-read-dictionary-from-file-in-python/
-def read_game_history() -> dict|None:
-
-    player_names = []
-    number_of_guesses = []
-    number_of_games = 0
-
-    try:
-        with open(game_history_path, "r") as file:
-            for line in file:
-
-                if line.startswith("{"):
-                    stat_dict = ast.literal_eval(line)
-                    player_names.append(stat_dict["player_name"])
-                    number_of_guesses.append(len(stat_dict["player_guesses"]))
-                    number_of_games += 1
-
-            return {"player_names": player_names, "number_of_guesses": number_of_guesses, "number_of_games": number_of_games}
-
-    except FileNotFoundError:
-        print(f"Error: '{game_history_path}' not found")
-        return None
-
-    except Exception as e:
-        print(f"Error: {e}")
-        return None
 
 def save_game_log(player_name: str, target_word: str, player_guesses:list[str], win_condition: bool = False):
+    """
+    Save game log to game_history.txt.
 
+    Args:
+        - player_name (str): name of the player
+        - target_word (str): target word the user was trying to guess
+        - player_guesses (list[str]): list of previously guessed words
+        - win_condition (bool): if True, the game was won, False the player lost
+    """
+
+    # Get current time
     time = datetime.datetime.now()
 
+    # Populate dictionary
     stat_dict = {
         "time_stamp": time.strftime("%I:%M:%S(%p) - %d/%m/%y"),
         "player_name": player_name,
@@ -626,9 +669,11 @@ def save_game_log(player_name: str, target_word: str, player_guesses:list[str], 
         with open(game_history_path, "a+") as file:
 
             # https://labex.io/tutorials/python-how-to-read-the-contents-of-a-python-file-and-check-if-it-is-empty-395093
+            # Check if file is empty, if it is, append the header
             if os.path.getsize(game_history_path) == 0:
                 file.write("------------=| Game History |=------------\n")
 
+            # Append/write stat dictionary to file
             file.write(f"{stat_dict}\n")
 
     except Exception as e:
