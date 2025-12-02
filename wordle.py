@@ -5,8 +5,11 @@
 #
 # Course Cert IV: Programming
 # Lecturer: Para O'Kelly
-
+import ast
+import datetime
+import os
 import random
+import statistics
 import sys
 
 # Name: Josh Plank | Student Number: 20154551 | Date: 17/11/25
@@ -16,6 +19,8 @@ import sys
 # -------------------------------
 all_words_path = "all_words.txt"
 target_words_path = "target_words.txt"
+stats_path = "stats.txt"
+game_history_path = "game_history.txt"
 
 # -------------------------------
 # --------=| Settings |=---------
@@ -44,7 +49,7 @@ wrongly_placed_symbol = "?"
 # debug_file_path - File path for word lists
 # debug_number_of_guesses - sets the debug amount of guesses; used for looping through the game 'x' amounts of times
 debug_state = False
-debug_test_case = 8
+debug_test_case = 11
 debug_user_guess = ""
 debug_target_word = None
 debug_file_path = ""
@@ -170,6 +175,7 @@ def print_instructions():
           f"|    You must guess the word in {game_attempts} attempts.                                                                     |\n"
           f"{xxl_hr}"
           "|                                          * Good luck and have fun! *                                          |\n"
+          "|                          (Type 'help' at any time to view these instructions again)                           |\n"
           f"{xxl_hr}")
 
 # Asks user to input a word and cleans for capital letters and white spaces
@@ -236,7 +242,7 @@ def is_user_guess_valid(user_input: str, word_of_the_day: str) -> bool:
     return True
 
 # Check if player has won, print congratulations if they have, give them misery if they lost
-def player_has_won(win_condition: bool, attempts: int, users_guessed_words: str,  target: str):
+def player_has_won(win_condition: bool, attempts: int, users_guessed_words: str,  target: str, player_name: str):
     """Function called to check if a player has won
     Arguments:
     ---------
@@ -260,7 +266,6 @@ def player_has_won(win_condition: bool, attempts: int, users_guessed_words: str,
               f"| Attempts: {attempts}/{game_attempts}                                              |\n"
               f"{guessed_words_str}"
               f"{sm_hr}")
-        sys.exit(0)
 
     # If the player runs out of attempts, print misery message and shame them. Close terminal.
     if attempts <= 0:
@@ -271,10 +276,10 @@ def player_has_won(win_condition: bool, attempts: int, users_guessed_words: str,
               f"| Attempts: {attempts}/{game_attempts}                                              |\n"
               f"{guessed_words_str}"
               f"{sm_hr}")
-        sys.exit(0)
+    save_game_log()
 
 # Gets the players name and welcomes them
-def get_players_name():
+def get_players_name() -> str:
     """Function called to get the players name and welcomes them"""
     user_name = input("Please enter your name: ")
 
@@ -282,6 +287,7 @@ def get_players_name():
         user_name = "Playa"
 
     print(f"Welcome, {user_name}\n")
+    return user_name
 
 # Asks the user if they need instructions or not and starts teh game
 def prompt_instructions():
@@ -297,7 +303,7 @@ def prompt_instructions():
         print_instructions()
 
     if user_response == "n":
-        print("Very well then, good luck!")
+        print("Very well then, good luck!\n(Psst! You can type 'help' at any time to see the instructions.)")
 
 # Please note: parameter only here as integrated into debug test case 9 (Defaulted to 'None' so without that test case affecting it will act as normal)
 def play_game(target_word: str = None):
@@ -305,7 +311,7 @@ def play_game(target_word: str = None):
     print_welcome_message()
 
     # Get players name and say welcome to them
-    get_players_name()
+    player_name = get_players_name()
 
     # Ask player if they want instructions
     prompt_instructions()
@@ -355,11 +361,11 @@ def play_game(target_word: str = None):
             guessed_words_str = ", ".join(users_guessed_words)
 
             if user_guess == target_word:
-                player_has_won(True, attempts, guessed_words_str, target_word)
+                player_has_won(True, attempts, guessed_words_str, target_word, player_name)
             else:
                 # Reduce the guess attempt by 1
                 attempts -= 1
-                player_has_won(False, attempts, guessed_words_str, target_word)
+                player_has_won(False, attempts, guessed_words_str, target_word, player_name)
                 print(f"Your current guesses: {guessed_words_str}\n---------------------")
 
         # If not a valid word, continue loop; user_guess word error handling is done in is_user_guess_valid()
@@ -518,6 +524,89 @@ def debug_mode(state: bool,
                 print(f"\n Target word: {target_word}\n")
                 play_game(target_word)
 
+            case 10:
+                target_word = random_target_word()
+                guessed_words = ["steam", "steam", "steam", "steam"]
+                save_game_log("Playa", target_word, guessed_words, True)
+                update_stat_file(read_game_history())
+
+            case 11:
+                print(f"{get_average_score([])}")
+                read_game_history()
+
+def get_average_score(user_guess_attempts: list[int]) -> float | None:
+
+    if user_guess_attempts:
+        print(statistics.mean(user_guess_attempts))
+        return statistics.mean(user_guess_attempts)
+
+    return None
+
+def update_stat_file(stats: dict[str, list[str|int]]):
+    if stats:
+        try:
+            with open(stats_path, "w+") as file:
+                heading = "------------=| Game Stats |=------------\n"
+                file.write(f"{heading}"
+                           f"Player names: {"; ".join(stats.get('player_names'))}\n"
+                           f"Number of Games: {str(stats.get("number_of_games"))}\n"
+                           f"Average Attempts: {get_average_score(stats.get('number_of_guesses')):.2f}")
+                print(stats.get("number_of_guesses"))
+
+        except Exception as e:
+            print(f"Error: {e}")
+
+# https://www.geeksforgeeks.org/python/how-to-read-dictionary-from-file-in-python/
+def read_game_history() -> dict|None:
+
+    player_names = []
+    number_of_guesses = []
+    number_of_games = 0
+
+    try:
+        with open(game_history_path, "r") as file:
+            for line in file:
+
+                if line.startswith("{"):
+                    stat_dict = ast.literal_eval(line)
+                    player_names.append(stat_dict["player_name"])
+                    number_of_guesses.append(len(stat_dict["player_guesses"]))
+                    number_of_games += 1
+
+            return {"player_names": player_names, "number_of_guesses": number_of_guesses, "number_of_games": number_of_games}
+
+    except FileNotFoundError:
+        print(f"Error: '{stats_path}' not found")
+        return None
+
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
+def save_game_log(player_name: str, target_word: str, player_guesses:list[str], win_condition: bool = False):
+
+    time = datetime.datetime.now()
+
+    stat_dict = {
+        "time_stamp": time.strftime("%I:%M:%S(%p) - %d/%m/%y"),
+        "player_name": player_name,
+        "target_word": target_word,
+        "player_guesses": player_guesses,
+        "win_condition": win_condition
+    }
+
+    try:
+        with open(game_history_path, "a+") as file:
+
+            # https://labex.io/tutorials/python-how-to-read-the-contents-of-a-python-file-and-check-if-it-is-empty-395093
+            if os.path.getsize(game_history_path) == 0:
+                file.write("------------=| Game History |=------------\n")
+
+            #print(f"\n{time.strftime("-> %I:%M:%S(%p) - %d/%m/%y")} | {stat_dict}")
+            file.write(f"\n{stat_dict}")
+
+    except Exception as e:
+        print(e)
 
 def main():
     if debug_state:
