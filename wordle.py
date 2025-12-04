@@ -735,10 +735,26 @@ def save_game_log(player_name: str, target_word: str, player_guesses:list[str], 
 
 # Project stat requirement functions
 def calculate_average(old_avg: float, num_of_games: int, new_score: int) -> float:
+    """
+    Calculate the average score between old_avg and new_score.
+    Args:
+        - old_avg (float): the previous average score
+        - num_of_games (int): number of games
+        - new_score (int): the new score
+
+    Returns:
+        - float: the average score
+    """
     return (old_avg * num_of_games + new_score) / (num_of_games + 1)
 
 
 def stats_handler(player_name: str, new_score: int):
+    """
+    Creates/Updates 'boring_stats.txt' file with new score.
+    Args:
+        - player_name (str): name of the player
+        - new_score (int): the new score
+    """
     write_str = ""
 
     # If the file already exists, get stats
@@ -761,6 +777,8 @@ def stats_handler(player_name: str, new_score: int):
 
                         # Write to file
                         write_str = f"{player_name_str},{number_of_games},{average_score:.2f}"
+
+                    # If the file exists however is empty
                     else:
                         write_str = f"{player_name}, 1, {new_score}"
 
@@ -771,9 +789,12 @@ def stats_handler(player_name: str, new_score: int):
         except Exception as e:
             print(f"Error: {e}")
             return
+
+    # If the file doesn't exist
     else:
         write_str = f"{player_name}, 1, {new_score}"
 
+    # Create or try writing 'write_str' to 'boring_stats.txt'
     try:
         with open(boring_stats_path, "w") as file:
             file.write(write_str)
