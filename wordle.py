@@ -49,7 +49,7 @@ wrongly_placed_symbol = "?"
 # debug_target_word - Hard coded target word
 # debug_file_path - File path for word lists
 # debug_number_of_guesses - sets the debug amount of guesses; used for looping through the game 'x' amounts of times
-debug_state = True
+debug_state = False
 debug_test_case = 13
 debug_user_guess = ""
 debug_target_word = None
@@ -362,7 +362,7 @@ def play_game(target_word: str = None):
     prompt_instructions()
 
     # Initialise game
-    attempts = game_attempts
+    attempts = 1
     users_guessed_words = []
     user_cheat_mode = False
 
@@ -372,7 +372,7 @@ def play_game(target_word: str = None):
         target_word = random_target_word()
 
     # Loop through number of attempts until attempts run out
-    while attempts > 0:
+    while attempts <= game_attempts:
 
         # Print attempt number
         print(f"\nGuess number: {attempts}/{game_attempts}")
@@ -409,7 +409,7 @@ def play_game(target_word: str = None):
                 player_has_won(True, attempts, users_guessed_words, target_word, player_name)
             else:
                 # Reduce the guess attempt by 1
-                attempts -= 1
+                attempts += 1
                 player_has_won(False, attempts, users_guessed_words, target_word, player_name)
                 print(f"Your current guesses: {guessed_words_str}\n---------------------")
 
@@ -757,7 +757,7 @@ def stats_handler(player_name: str, new_score: int):
     """
     write_str = ""
 
-    # If the file already exists, get stats
+    # If the file already exists, read stats
     if os.path.exists(boring_stats_path):
         try:
             with open(boring_stats_path, "r") as file:
