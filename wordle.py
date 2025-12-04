@@ -21,6 +21,7 @@ all_words_path = "all_words.txt"
 target_words_path = "target_words.txt"
 stats_path = "stats.txt"
 game_history_path = "game_history.txt"
+boring_stats_path = "boring_stats.txt"
 
 # -------------------------------
 # --------=| Settings |=---------
@@ -48,8 +49,8 @@ wrongly_placed_symbol = "?"
 # debug_target_word - Hard coded target word
 # debug_file_path - File path for word lists
 # debug_number_of_guesses - sets the debug amount of guesses; used for looping through the game 'x' amounts of times
-debug_state = False
-debug_test_case = 12
+debug_state = True
+debug_test_case = 13
 debug_user_guess = ""
 debug_target_word = None
 debug_file_path = ""
@@ -275,8 +276,14 @@ def player_has_won(win_condition: bool, attempts: int, users_guessed_words: list
               f"| Attempts: {attempts}/{game_attempts}                                              |\n"
               f"{guessed_words_str}"
               f"{sm_hr}")
+
+        # Alternative stats
         save_game_log(player_name, target, users_guessed_words, True)
         update_stat_file()
+
+        # Project requirements stats
+        stats_handler(player_name, attempts)
+
         sys.exit(0)
 
     # If the player runs out of attempts, print misery message and shame them. Close terminal.
@@ -288,21 +295,42 @@ def player_has_won(win_condition: bool, attempts: int, users_guessed_words: list
               f"| Attempts: {attempts}/{game_attempts}                                              |\n"
               f"{guessed_words_str}"
               f"{sm_hr}")
+
+        # Alternative Stats
         save_game_log(player_name, target, users_guessed_words, False)
         update_stat_file()
+
+        # Project requirements
+        stats_handler(player_name, attempts)
+
         sys.exit(0)
 
 
 # Gets the players name and welcomes them
 def get_players_name() -> str:
     """Function called to get the players name and welcomes them"""
-    user_name = input("Please enter your name: ")
 
-    if user_name.strip() == "":
-        user_name = "Playa"
+    # Create while loop to prevent recursion
+    while True:
 
-    print(f"Welcome, {user_name}\n")
-    return user_name
+        # Ask player for their name
+        player_name = input("Please enter your name: ")
+
+        # If player name field is empty, give them a default name and break from loop
+        if player_name.strip() == "":
+            player_name = "Playa"
+            break
+
+        # If the player name contains commas or semicolons that could potentially upset our stats function; Let them know about it and continue loop to ask again.
+        if ',' in player_name or ';' in player_name:
+            print("Name cannot contain ',' or ';'.")
+            continue
+
+        # If both conditions are satisfied, break from loop.
+        break
+
+    print(f"Welcome, {player_name}\n")
+    return player_name
 
 
 # Asks the user if they need instructions or not and starts teh game
@@ -558,7 +586,18 @@ def debug_mode(state: bool,
             case 12:
                 player_has_won(True, 1, ["steam"], "steam", "Playa")
 
+            case 13:
+                player_has_won(True, 1, ["steam"], "steam", "Atm1")
+                player_has_won(True, 6, ["steam"], "steam", "Atm6")
+                player_has_won(True, 3, ["steam"], "steam", "Atm3")
+                player_has_won(True, 4, ["steam"], "steam", "Atm6")
+                player_has_won(True, 2, ["steam"], "steam", "Atm3")
+                player_has_won(True, 6, ["steam"], "steam", "Atm3")
+                player_has_won(True, 6, ["steam"], "steam", "Atm3")
 
+
+#--------------------------=| Ignore this, I got carried away 😂|=-----------------------
+# Alternative project stat functions
 def get_average_score(user_guess_attempts: list[int]) -> float | None:
     """Takes in a list[int] of the total number of game attempts and
     returns the mean/average attempts or None if there is no data.
@@ -573,7 +612,6 @@ def get_average_score(user_guess_attempts: list[int]) -> float | None:
         return statistics.mean(user_guess_attempts)
 
     return None
-
 
 # https://www.geeksforgeeks.org/python/how-to-read-dictionary-from-file-in-python/
 def read_game_history() -> dict | None:
@@ -692,8 +730,58 @@ def save_game_log(player_name: str, target_word: str, player_guesses:list[str], 
     except Exception as e:
         print(e)
 
-def stats_handler():
-    pass
+#------------------------------=| End of ignore block |=---------------------------------
+#----------------------------------------------------------------------------------------
+
+# Project stat requirement functions
+def calculate_average(old_avg: float, num_of_games: int, new_score: int) -> float:
+    return (old_avg * num_of_games + new_score) / (num_of_games + 1)
+
+
+def stats_handler(player_name: str, new_score: int):
+    write_str = ""
+
+    # If the file already exists, get stats
+    if os.path.exists(boring_stats_path):
+        try:
+            with open(boring_stats_path, "r") as file:
+                for line in file:
+                    if line.strip():
+
+                        stats = [stat.strip() for stat in line.split(",")]
+
+                        # Stats:
+                        #   [0] - name
+                        #   [1] - number_of_games
+                        #   [2] - average_score
+
+                        player_name_str = f"{stats[0]};{player_name}"
+                        number_of_games = int(stats[1]) + 1
+                        average_score = calculate_average(float(stats[2]), int(stats[1]), new_score)
+
+                        # Write to file
+                        write_str = f"{player_name_str},{number_of_games},{average_score:.2f}"
+                    else:
+                        write_str = f"{player_name}, 1, {new_score}"
+
+        except FileNotFoundError:
+            print(f"Error: '{boring_stats_path}' not found")
+            return
+
+        except Exception as e:
+            print(f"Error: {e}")
+            return
+    else:
+        write_str = f"{player_name}, 1, {new_score}"
+
+    try:
+        with open(boring_stats_path, "w") as file:
+            file.write(write_str)
+            return
+
+    except Exception as e:
+        print(f"Error: {e}")
+
 
 def main():
     if debug_state:
